@@ -1,4 +1,4 @@
-import React,{useContext, useState} from 'react';
+import React,{useContext, useState, useEffect} from 'react';
 import proyectoContext from '../../context/proyectos/proyectoContext';
 import tareaContext from '../../context/tareas/tareaContext';
 
@@ -7,8 +7,16 @@ const FormTarea  = () => {
     const {proyecto} = proyectosConstext;
      //obtener la funcion context de la tarea
      const tareasContext = useContext(tareaContext);
-     const {errortarea,agregarTarea,validarTarea,obtenerTareas}=tareasContext;
-
+     const {tareaseleccionada, errortarea,agregarTarea,validarTarea,obtenerTareas,actualizarTarea,limpiarTarea}=tareasContext;
+    useEffect(()=>{
+        if(tareaseleccionada!==null){
+            guardarTarea(tareaseleccionada)
+        }else{
+            guardarTarea({
+                nombre:''
+            })
+        }
+    }, [tareaseleccionada])
     const [tarea, guardarTarea] = useState({
         nombre:''
     })
@@ -34,12 +42,19 @@ const FormTarea  = () => {
             validarTarea();
             return;
         }
-        //pasar la vlidación
+        //si es para edicion o nueva tarea
+        if(tareaseleccionada===null){
+            //agregar nueva tarea
+            tarea.proyectoId = proyectoActual.id;
+            tarea.estado = false;
+            agregarTarea(tarea);
+        }else{
+            //actualizar tarea existente
+            actualizarTarea(tarea);
+            limpiarTarea();
+        }
         
-        //agregar nueva tarea
-        tarea.proyectoId = proyectoActual.id;
-        tarea.estado = false;
-        agregarTarea(tarea);
+        
         //obtener y filtar lista
         obtenerTareas(proyectoActual.id);
         //reiniciar form
@@ -68,7 +83,7 @@ const FormTarea  = () => {
                     <input
                         type="submit"
                         className="btn btn-primario btn-submit btn-block"
-                        value="Agregar Tarea"
+                        value={tareaseleccionada? 'Editar Tarea' :'Agregar tarea'}
                     />
                     
                 </div>
